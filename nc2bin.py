@@ -8,43 +8,63 @@ import argparse
 import os
 
 
-def write_netCDF_variables_to_bin32(path_to_nc: str = None) -> object:
-    if not path_to_nc:
-        print(" please provide the path to .nc file!")
-        exit(1)
-    if not os.path.isfile(path_to_nc) or not path_to_nc.endswith(".nc"):
-        print("the path is not valid!")
-        exit(1)
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+class NetcdfReader:
 
-    try:
-        name = Path(path_to_nc).stem
-        os.makedirs(dir_path + f"/{name}_bin", exist_ok=True)
-        out_path = dir_path + f"/{name}_bin"
+    def __init__(self, path_to_nc: str = None):
+        if not path_to_nc:
+            print(" please provide the path to .nc file!")
+            exit(1)
+        if not os.path.isfile(path_to_nc) or not path_to_nc.endswith(".nc"):
+            print("the path is not valid!")
+            exit(1)
+        self.path = path_to_nc
+        self.name = Path(path_to_nc).stem
+        self.dir_path = os.path.dirname(os.path.realpath(__file__))
+        self.ds = self.read_()
+        self.mk_dir()
+        self.data = {}
+        self.out_path = self.dir_path + f"/{self.name}_bin"
+        self.get_data(write=False)
 
-    except Exception as e:
-        print(e)
-        exit(1)
-    try:
-        ds = nc.Dataset(path_to_nc)
-    except Exception as e:
-        print(e)
+    def read_(self):
+        try:
+            return nc.Dataset(self.path)
+        except Exception as e:
+            print(e)
 
-    data = {}
-    for var in ds.variables:
-        np_arr = ds[var][:]
-        data[f'{var}'] = np.array(np_arr)
-        data[f'{var}_max'] = np_arr.max()
-        data[f'{var}_min'] = np_arr.min()
-        data[f'{var}_len'] = np_arr.shape[0]
-        data[f'{var}_path'] = f'{out_path}/{var}.bin32'
-        # metadata[f'{var}_len'] = #out_path + f'/{var}.bin32'
-        # metadata[f'var_max']=np_arr.max()
-        with open(f'{out_path}/{var}.bin32', 'wb') as f:
+    def mk_dir(self):
+        try:
+            os.makedirs(self.dir_path + f"/{self.name}_bin", exist_ok=True)
+        except Exception as e:
+            print(e)
+            exit(1)
+
+    def get_data(self, i=None, j=None, write=False):
+        for var in self.ds.variables:
+            var_name = 'lon' if 'lon' in str(var) else 'lat' if 'lat' in str(var) else 'topo' if 'topo' in str(
+                var) else var
+            np_arr = self.ds[var][i:j]
+            self.data[f'{var_name}'] = np.array(np_arr)
+            self.data[f'{var_name}_max'] = np_arr.max()
+            self.data[f'{var_name}_min'] = np_arr.min()
+            self.data[f'{var_name}_len'] = np_arr.shape[0]
+            self.data[f'{var_name}_path'] = f'{self.out_path}/{var_name}.bin32'
+            if write:
+                self.gradient()
+                with open(f'{self.out_path}/{var_name}.bin32', 'wb') as f:
+                    # metadata[f'{var}_binary_len'] = len(np_arr.tobytes())
+                    f.write(np_arr.tobytes())
+                    print(f'successfully wrote the {var_name} with {np_arr.shape} shape to {var_name}.bin32. ')
+
+    def gradient(self) -> None:
+        # calculate topography gradient
+        tpx, tpy = np.gradient(self.data['topo'])
+        tpxy = np.sqrt(np.power(tpx, 2) + np.power(tpy, 2))  # absolute value of the gradient
+        tpxy = tpxy / np.max(np.max(tpxy))  # normalise to 1
+        with open(self.out_path + '/grad.bin32', 'wb') as f:
             # metadata[f'{var}_binary_len'] = len(np_arr.tobytes())
-            f.write(np_arr.tobytes())
-            print(f'successfully wrote the {var} with {np_arr.shape} shape to {var}.bin32. ')
-    return data
+            f.write(tpxy.tobytes())
+            print(f'successfully wrote the grade with {tpxy.shape} shape to grad.bin32. ')
 
 # if __name__ == "__main__":
 #     parser = argparse.ArgumentParser(description='writing netCDF to binary file.')

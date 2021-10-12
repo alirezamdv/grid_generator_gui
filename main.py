@@ -14,7 +14,7 @@ from pyqtlet import L, MapWidget
 import json
 
 from StartDialog import CustomDialog
-from nc2bin import write_netCDF_variables_to_bin32
+from nc2bin import NetcdfReader
 from utils import check_path, gradient, bounding_box, box_overlap
 
 
@@ -37,8 +37,11 @@ class MapWindow(QWidget):
             t = 'netcdf'
             print(path)
             if t == 'netcdf':
-                data = write_netCDF_variables_to_bin32(path)
-                gradient(data['topo'], os.path.dirname(data['topo_path']))
+                nc = NetcdfReader(path)
+                data = nc.data
+                print(data)
+
+                # gradient(data['topo'], os.path.dirname(data['topo_path']))
                 self.bound = [
                     [data['lat_max'], data['lon_min']],
                     [data['lat_min'], data['lon_max']]
@@ -170,7 +173,7 @@ class MapWindow(QWidget):
     def project_name_changed(self):
         self.groupbox.setTitle(self.project_name_input.text())
 
-    def remove_polygon(self,n=-1):
+    def remove_polygon(self, n=-1):
         pols = [pol for pol in self.drawControl.featureGroup.layers if 'Polygon' in pol.__class__.__name__]
         if len(pols) > 0:
             [self.drawControl.featureGroup.removeLayer(p) for p in pols[:n]]
