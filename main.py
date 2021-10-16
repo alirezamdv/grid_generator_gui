@@ -14,8 +14,8 @@ from pyqtlet import L, MapWidget
 import json
 
 from StartDialog import CustomDialog
-from nc2bin import NetcdfReader
-from utils import check_path, gradient, bounding_box, box_overlap
+from nc2bin import NetcdfToBin
+from utils import check_path, gradient, bounding_box, is_inside
 
 
 class MapWindow(QWidget):
@@ -37,7 +37,7 @@ class MapWindow(QWidget):
             t = 'netcdf'
             print(path)
             if t == 'netcdf':
-                nc = NetcdfReader(path)
+                nc = NetcdfToBin(path)
                 data = nc.data
                 print(data)
 
@@ -69,11 +69,9 @@ class MapWindow(QWidget):
                 'featureGroup': self.editableLayers
             }})
         self.map.addControl(self.drawControl)
-        # self.map.clicked.connect(lambda x: self.addMarker(x))
+        self.map.clicked.connect(lambda x: self.popup(x))
         self.map.drawCreated.connect(lambda x: self.draw_(x))
-        self.marker = L.rectangle(self.bound, {"color": "#ff7800", "weight": 3})
-        # self.marker.bindPopup('Maps are a treasure.')
-        self.map.addLayer(self.marker)
+        self.draw_bounds(self.bound, "global", options={"color": "#ff7800", "weight": 3})
         # self.map.fitBounds(self.bound)
         self.polygon = {}
         self.points = []
@@ -119,17 +117,38 @@ class MapWindow(QWidget):
 
         self.show()
 
+    def popup(self, x):
+        print(x)
+        # L.p .popup().setLatLng(x)
+        # .setContent('<p>Hello world!<br />This is a nice popup.</p>')
+        # .openOn(map);
+
+    def draw_bounds(self, bounds, name, options=None):
+        if options is None:
+            options = {}
+        marker = L.rectangle(bounds, options=options)
+        marker.setObjectName(name)
+        self.drawControl.featureGroup.addLayer(marker)
+        # self.map.addLayer(marker)
+
     def draw_(self, e):
         if e['layerType'] == "polygon":
-            self.remove_polygon()
+            self.remove_shape()
+            self.remove_shape('Rectangle', n=None)
+
             bbx = e['layer']['_bounds']
             self.polygon['boundingbox'] = [[bbx['_northEast']['lat'], bbx['_northEast']['lng']],
                                            [bbx['_southWest']['lat'],
                                             bbx['_southWest']['lng']]]
-            if box_overlap(self.bound, self.polygon['boundingbox']):
+            # print(is_inside(self.bound, self.polygon['boundingbox']))
+            self.draw_bounds(self.polygon['boundingbox'], 'regional',
+                             options={'color': 'black', 'weight': '3', 'dashArray': '20, 20', 'dashOffset': '0'})
+            if is_inside(self.bound, self.polygon['boundingbox']):
                 self.warning_box("the boundingbox of the polygon is overlapping the data bounds")
-                self.remove_polygon(1)
+                self.remove_shape(n=1)
+                self.remove_shape('Rectangle', 1)
             self.input01.setText(str(self.polygon['boundingbox']))
+
         # self.drawControl.featureGroup.toGeoJSON(lambda x: self.get_layer(x))
         # print(e)
 
@@ -173,8 +192,11 @@ class MapWindow(QWidget):
     def project_name_changed(self):
         self.groupbox.setTitle(self.project_name_input.text())
 
-    def remove_polygon(self, n=-1):
-        pols = [pol for pol in self.drawControl.featureGroup.layers if 'Polygon' in pol.__class__.__name__]
+    def remove_shape(self, shape='Polygon', n=-1):
+        pols = [pol for pol in self.drawControl.featureGroup.layers if
+                str(shape) in pol.__class__.__name__ and pol.objectName() != 'global']
+        for p in pols:
+            print(p.objectName())
         if len(pols) > 0:
             [self.drawControl.featureGroup.removeLayer(p) for p in pols[:n]]
 

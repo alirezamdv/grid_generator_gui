@@ -8,7 +8,7 @@ import argparse
 import os
 
 
-class NetcdfReader:
+class NetcdfToBin:
 
     def __init__(self, path_to_nc: str = None):
         if not path_to_nc:
@@ -41,8 +41,8 @@ class NetcdfReader:
 
     def get_data(self, i=None, j=None, write=False):
         for var in self.ds.variables:
-            var_name = 'lon' if 'lon' in str(var) else 'lat' if 'lat' in str(var) else 'topo' if 'topo' in str(
-                var) else var
+            var_name = 'lon' if 'lon' in var and not any(char.isdigit() for char in var) else 'lat' if 'lat' in var\
+                else 'topo' if 'topo' in var else var
             np_arr = self.ds[var][i:j]
             self.data[f'{var_name}'] = np.array(np_arr)
             self.data[f'{var_name}_max'] = np_arr.max()

@@ -59,13 +59,34 @@ def bounding_box(points):
     return [(min(x_coordinates), min(y_coordinates)), (max(x_coordinates), max(y_coordinates))]
 
 
-def box_overlap(box1, box2):
+# def box_overlap(box1, box2):
+#     py1, px1 = box2[0]
+#     py2, px2 = box2[1]
+#     y1, x1 = box1[0]
+#     y2, x2 = box1[1]
+#     # logic1 = (x1 < px1 < x2)
+#     # logic2 = (y1 > py1 > y2)
+#     # logic3 = (x1 < px1 < x2)
+#     # logic4 = (y1 > py1 > y2)
+#     logic1 = (px1 <= x2 or px1 >= x2)
+#
+#     logic2 = (py1 <= y2 or py2 >= y2)
+#
+#
+#     logic3 = (c1 <= zMax2 | | zMax1 >= zMin2)
+#
+#     print('box 1 ', box1, '\n', 'box2    ', box2)
+#     print('logic1:  ', logic1, '\n', 'logic2 ', '\n', logic2, 'logic3  ', logic3, '\n', 'logic4  ', logic4)
+#
+#     return not (logic1 and logic2 and logic3 and logic4)
+def is_inside(box1, box2):
     py1, px1 = box2[0]
     py2, px2 = box2[1]
     y1, x1 = box1[0]
     y2, x2 = box1[1]
-    logic1 = (x1 < px1 < x2)
-    logic2 = (y1 > py1 > y2)
-    logic3 = (x1 < px1 < x2)
-    logic4 = (y1 > py1 > y2)
-    return not (logic1 and logic2 and logic3 and logic4)
+    logic1 = (x1 < px1 < x2 or y1 < py1 < y2)
+    logic2 = (x1 < px2 < x2 or y1 < py2 < y2)
+    # print(box1, '\n', box2)
+    # print(f"point({py1, px1} is inside {box1}) ", logic1, '\n')
+    # print(f"point({py2, px2} is inside {box1}) ", logic1, '\n')
+    return not (logic1 and logic2)
