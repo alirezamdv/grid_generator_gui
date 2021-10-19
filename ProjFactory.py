@@ -1,10 +1,11 @@
 import os
 import configparser
+from shutil import copyfile
 import json
 
 
-class ProjectInitiator:
-    def __init__(self, name, proj_names, mode=""):
+class ProjFactory:
+    def __init__(self,):
         self.parser = configparser.ConfigParser()
         # self.read_env()
         # self.dirs = next(os.walk("."))[1]
@@ -13,12 +14,10 @@ class ProjectInitiator:
         # if not name and len(self.projects) < 1:
         #     self.name = "untitled"
         #     self.create_project()
-        if
-        if mode == "new":
-            c = len([un for un in self.projects if "untitled" in un.split("_")]) + 1
-            print(c)
-            self.name = "untitled_" + str(c)
-            self.create_project()
+
+        # c = len([un for un in self.projects if "untitled" in un.split("_")]) + 1
+        self.name = os.getenv('project_name')
+        self.create_project()
         self.save_env()
 
     def create_project(self):
@@ -55,14 +54,14 @@ def project_init(name="untitled"):
 def newest(path):
     files = next(os.walk(path))[1]
     paths = [os.path.join(path, basename) for basename in files]
-    PROJECTS.append(max(paths, key=os.path.getctime))
-    with open("config.ini", "w") as f:
-        f.write(f"projects={','.join(PROJECTS)}")
-    print(PROJECTS)
+    # PROJECTS.append(max(paths, key=os.path.getctime))
+    # with open("config.ini", "w") as f:
+        # f.write(f"projects={','.join(PROJECTS)}")
+    # print(PROJECTS)
     print(max(paths, key=os.path.getctime))
     print(files, "untitled" in files)
 
 
 # project_init("rrrdasdsdrrr")
 # newest(".")
-a = ProjectInitiator(mode="new")
+# a = ProjectInitiator(mode="new")

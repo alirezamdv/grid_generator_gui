@@ -13,6 +13,8 @@ from PyQt5 import QtGui, QtCore
 from pyqtlet import L, MapWidget
 import json
 
+from PolyWidget import PolyBox
+from ProjFactory import ProjFactory
 from StartDialog import CustomDialog
 from nc2bin import NetcdfToBin
 from utils import check_path, gradient, bounding_box, is_inside
@@ -33,19 +35,20 @@ class MapWindow(QWidget):
         if dlg.exec():
             print("Success!")
             # t, path = check_path()
+            print(os.getenv("topography_path"))
             path = "/home/amd/work/awi/repo/chile_30sec.nc"
             t = 'netcdf'
             print(path)
             if t == 'netcdf':
                 nc = NetcdfToBin(path)
-                data = nc.data
-                print(data)
+                self.data = nc.data
+            # ProjFactory()
 
-                # gradient(data['topo'], os.path.dirname(data['topo_path']))
-                self.bound = [
-                    [data['lat_max'], data['lon_min']],
-                    [data['lat_min'], data['lon_max']]
-                ]
+            # gradient(data['topo'], os.path.dirname(data['topo_path']))
+            self.bound = [
+                [self.data['lat_max'], self.data['lon_min']],
+                [self.data['lat_min'], self.data['lon_max']]
+            ]
         else:
             print("Cancel!")
             self.close()
@@ -110,10 +113,12 @@ class MapWindow(QWidget):
         # self.layout.addWidget(self.label)
 
         # Create textbox
+        self.poly = PolyBox()
         self.textbox = QPlainTextEdit(self)
         self.textbox.move(20, 20)
         self.textbox.resize(280, 40)
         self.layout.addWidget(self.textbox)
+        self.layout.addWidget(self.poly)
 
         self.show()
 

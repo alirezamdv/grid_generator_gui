@@ -59,41 +59,49 @@ class CustomDialog(QDialog):
         self.netCDF_path.setObjectName("netcdf_path")
         self.netCDF_path.editingFinished.connect(lambda: self.path_changed(self.netCDF_path))
         vbox.addWidget(self.netCDF_path, 2, 2)
-        lon_label = QLabel("path to binary file of longitude(.bin32): ")
-        lat_label = QLabel("path to binary file of latitude(.bin32): ")
-        topo_label = QLabel("path to binary file of topography(.bin32): ")
-        grad_label = QLabel("path to binary file of grade(.bin32): ")
+        path_to_topoDIR = QLabel("path to .bin32 files: ")
+        lon_label = QLabel("longitude(.bin32): ")
+        lat_label = QLabel("latitude(.bin32): ")
+        topo_label = QLabel("topography(.bin32): ")
+        grad_label = QLabel("grad(.bin32): ")
 
+        self.path_to_topoDIR = QLineEdit()
         self.longitude_path = QLineEdit()
         self.longitude_path.setObjectName("longitude_path")
-        self.longitude_path.editingFinished.connect(lambda: self.path_changed(self.longitude_path))
+        self.longitude_path.editingFinished.connect(
+            lambda: self.path_changed(self.longitude_path, self.path_to_topoDIR))
         self.latitude_path = QLineEdit()
         self.latitude_path.setObjectName("latitude_path")
-        self.latitude_path.editingFinished.connect(lambda: self.path_changed(self.latitude_path))
+        self.latitude_path.editingFinished.connect(lambda: self.path_changed(self.latitude_path, self.path_to_topoDIR))
         self.topography_path = QLineEdit()
         self.topography_path.setObjectName("topography_path")
-        self.topography_path.editingFinished.connect(lambda: self.path_changed(self.topography_path))
+        self.topography_path.editingFinished.connect(
+            lambda: self.path_changed(self.topography_path, self.path_to_topoDIR))
 
         self.grad_path = QLineEdit()
         self.grad_path.setObjectName("grad_path")
-        self.grad_path.editingFinished.connect(lambda: self.path_changed(self.grad_path))
+        self.grad_path.editingFinished.connect(lambda: self.path_changed(self.grad_path, self.path_to_topoDIR))
 
         self.longitude_path.setDisabled(True)
         self.latitude_path.setDisabled(True)
         self.topography_path.setDisabled(True)
         self.grad_path.setDisabled(True)
+        self.path_to_topoDIR.setDisabled(True)
 
-        vbox.addWidget(lon_label, 3, 1)
-        vbox.addWidget(self.longitude_path, 3, 2)
+        vbox.addWidget(path_to_topoDIR, 3, 1)
+        vbox.addWidget(self.path_to_topoDIR, 3, 2)
 
-        vbox.addWidget(lat_label, 4, 1)
-        vbox.addWidget(self.latitude_path, 4, 2)
+        vbox.addWidget(lon_label, 4, 1)
+        vbox.addWidget(self.longitude_path, 4, 2)
 
-        vbox.addWidget(topo_label, 5, 1)
-        vbox.addWidget(self.topography_path, 5, 2)
+        vbox.addWidget(lat_label, 5, 1)
+        vbox.addWidget(self.latitude_path, 5, 2)
 
-        vbox.addWidget(grad_label, 6, 1)
-        vbox.addWidget(self.grad_path, 6, 2)
+        vbox.addWidget(topo_label, 6, 1)
+        vbox.addWidget(self.topography_path, 6, 2)
+
+        vbox.addWidget(grad_label, 7, 1)
+        vbox.addWidget(self.grad_path, 7, 2)
 
         # self.input01.setReadOnly(True)
         # vbox.addWidget(self.input01, 2, 2)
@@ -118,18 +126,22 @@ class CustomDialog(QDialog):
             self.latitude_path.setDisabled(True)
             self.topography_path.setDisabled(True)
             self.grad_path.setDisabled(True)
+            self.path_to_topoDIR.setDisabled(True)
         else:
+            self.path_to_topoDIR.setDisabled(False)
             self.netCDF_path.setDisabled(True)
             self.longitude_path.setDisabled(False)
             self.latitude_path.setDisabled(False)
             self.topography_path.setDisabled(False)
             self.grad_path.setDisabled(False)
 
-    def path_changed(self, x):
-        if not os.path.isfile(x.text().strip()):
+    def path_changed(self, x, p):
+        filename = p.text().strip() + '/' if not p.text().endswith('/') else p.text().strip()
+        path_to_file = filename + (x.text().strip())
+        if not os.path.isfile(path_to_file):
             x.setStyleSheet("color: rgb(255, 0, 0);")
             self.validation_label.setText(f'please enter valid path for {x.objectName()}!')
         else:
             x.setStyleSheet("color: rgb(0, 0, 0);")
             self.validation_label.setText('')
-            os.environ[x.objectName()] = x.text().strip()
+            os.environ[x.objectName()] = path_to_file
