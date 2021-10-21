@@ -111,14 +111,13 @@ class MapWindow(QWidget):
         # self.label = QLabel()
         # self.layout.addWidget(self.button_select_point)
         # self.layout.addWidget(self.label)
-
         # Create textbox
-        self.poly = PolyBox()
+        # self.poly = PolyBox()
         self.textbox = QPlainTextEdit(self)
         self.textbox.move(20, 20)
         self.textbox.resize(280, 40)
         self.layout.addWidget(self.textbox)
-        self.layout.addWidget(self.poly)
+        # self.layout.addWidget(self.poly)
 
         self.show()
 
@@ -127,6 +126,10 @@ class MapWindow(QWidget):
         # L.p .popup().setLatLng(x)
         # .setContent('<p>Hello world!<br />This is a nice popup.</p>')
         # .openOn(map);
+
+    # def draw_point(self, point):
+    #     point = L.marker(point)
+    #     self.drawControl.featureGroup.addLayer(point)
 
     def draw_bounds(self, bounds, name, options=None):
         if options is None:
@@ -142,6 +145,8 @@ class MapWindow(QWidget):
             self.remove_shape('Rectangle', n=None)
 
             bbx = e['layer']['_bounds']
+            print(e['layer']['_latlngs']['0']['0'])
+            print(e['layer']['_latlngs'].keys())
             self.polygon['boundingbox'] = [[bbx['_northEast']['lat'], bbx['_northEast']['lng']],
                                            [bbx['_southWest']['lat'],
                                             bbx['_southWest']['lng']]]
