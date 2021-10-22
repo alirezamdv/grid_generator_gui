@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
     QDialog, QLineEdit, QCheckBox,
     QPushButton, QGridLayout,
     QDialogButtonBox, QVBoxLayout,
-    QLabel, QGroupBox, QComboBox
+    QLabel, QGroupBox, QComboBox, QPlainTextEdit
 )
 
 from utils import PathValidator
@@ -145,3 +145,27 @@ class CustomDialog(QDialog):
             x.setStyleSheet("color: rgb(0, 0, 0);")
             self.validation_label.setText('')
             os.environ[x.objectName()] = path_to_file
+
+
+class PolyDialog(QDialog):
+    def __init__(self, text=""):
+        super().__init__()
+        self.txt = text
+        self.setWindowTitle("editing .poly file")
+        self.layout = QVBoxLayout()
+
+        Qtn = QDialogButtonBox.Save | QDialogButtonBox.Cancel
+        self.butt = QDialogButtonBox(Qtn)
+        self.textbox = QPlainTextEdit(self)
+        # self.textbox.move(20, 20)
+        # self.textbox.resize(280, 40)
+        self.textbox.insertPlainText(self.txt)
+        self.textbox.textChanged.connect(self.text_changed)
+        self.butt.accepted.connect(self.accept)
+        self.butt.rejected.connect(self.reject)
+        self.layout.addWidget(self.textbox)
+        self.layout.addWidget(self.butt)
+        self.setLayout(self.layout)
+
+    def text_changed(self):
+        self.txt = self.textbox.toPlainText()

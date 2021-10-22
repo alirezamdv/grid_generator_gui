@@ -40,42 +40,32 @@ class PolyBox(QWidget):
         vbox.addWidget(node_label, 2, 1)
         vbox.addWidget(self.node_number, 2, 2)
 
-        node_label = QLabel('Node Number')
-        self.node_number = QLineEdit()
-        vbox.addWidget(node_label, 1, 1)
-        vbox.addWidget(self.node_number, 1, 2)
+        northEast = QLabel('north east: ')
+        self.northEast = QLineEdit("lng , lat")
+        vbox.addWidget(northEast, 2, 3)
+        vbox.addWidget(self.northEast, 2, 4)
+        node_attr= QLabel('node attribute: ')
+        self.node_attr = QLineEdit('2')
+        vbox.addWidget(node_attr, 2, 5)
+        vbox.addWidget(self.node_attr, 2, 6)
 
-        node_label = QLabel('Node Number')
-        self.node_number = QLineEdit()
-        vbox.addWidget(node_label, 1, 1)
-        vbox.addWidget(self.node_number, 1, 2)
 
-        node_label = QLabel('Node Number')
-        self.node_number = QLineEdit()
-        vbox.addWidget(node_label, 1, 1)
-        vbox.addWidget(self.node_number, 1, 2)
 
-        # line 1
-        node_label = QLabel('Node Number')
-        self.node_number = QLineEdit()
-        vbox.addWidget(node_label, 1, 1)
-        vbox.addWidget(self.node_number, 1, 2)
 
-        node_label = QLabel('Node Number')
-        self.node_number = QLineEdit()
-        vbox.addWidget(node_label, 1, 1)
-        vbox.addWidget(self.node_number, 1, 2)
+        # line 3
+        node_1 = QLabel('node ')
+        self.node_1 = QLineEdit('1')
+        vbox.addWidget(node_1, 3, 1)
+        vbox.addWidget(self.node_1, 3, 2)
 
-        node_label = QLabel('Node Number')
-        self.node_number = QLineEdit()
-        vbox.addWidget(node_label, 1, 1)
-        vbox.addWidget(self.node_number, 1, 2)
-
-        node_label = QLabel('Node Number')
-        self.node_number = QLineEdit()
-        vbox.addWidget(node_label, 1, 1)
-        vbox.addWidget(self.node_number, 1, 2)
-
+        southWest = QLabel('south west: ')
+        self.southWest = QLineEdit("lng , lat")
+        vbox.addWidget(southWest, 3, 3)
+        vbox.addWidget(self.southWest, 3, 4)
+        node_attr = QLabel('node attribute: ')
+        self.node_attr = QLineEdit('2')
+        vbox.addWidget(node_attr, 2, 5)
+        vbox.addWidget(self.node_attr, 2, 6)
         # line 1
         node_label = QLabel('Node Number')
         self.node_number = QLineEdit()
