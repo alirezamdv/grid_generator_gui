@@ -1,3 +1,7 @@
+"""
+a.mahdavi@outlook.com
+"""
+
 import os
 import configparser
 import numpy as np
@@ -71,7 +75,7 @@ def bounding_box(points):
 def create_project(name):
     parser, proj = get_configs()
     os.makedirs("./" + name, exist_ok=True)
-    os.environ['project_path'] = "./" + name +"/"
+    os.environ['project_path'] = "./" + name + "/"
     proj.append(name)
     parser.set("global_configs", "projects", ','.join(proj))
     write_configs(parser)

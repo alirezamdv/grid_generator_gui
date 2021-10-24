@@ -1,5 +1,8 @@
 #!/usr/bin/python
-import math
+
+"""
+a.mahdavi@outlook.com
+"""
 
 import netCDF4 as nc
 import numpy as np
@@ -41,7 +44,7 @@ class NetcdfToBin:
 
     def get_data(self, i=None, j=None, write=False):
         for var in self.ds.variables:
-            var_name = 'lon' if 'lon' in var and not any(char.isdigit() for char in var) else 'lat' if 'lat' in var\
+            var_name = 'lon' if 'lon' in var and not any(char.isdigit() for char in var) else 'lat' if 'lat' in var \
                 else 'topo' if 'topo' in var else var
             np_arr = self.ds[var][i:j]
             self.data[f'{var_name}'] = np.array(np_arr)

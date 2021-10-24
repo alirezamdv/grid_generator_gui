@@ -1,3 +1,7 @@
+"""
+a.mahdavi@outlook.com
+"""
+
 from PyQt5.QtWidgets import (QWidget, QGridLayout, QGroupBox, QVBoxLayout, QLineEdit, QLabel, QPushButton)
 
 
@@ -95,7 +99,7 @@ class AreaBox(QWidget):
         # self.vbox.addLayout(self.layouts[l_name], self.number_of_area, 1)
 
     def delete(self):
-        self.warning(type="Info", text= f"the {self.p_area_name.text()} is removed.")
+        self.warning(type="Info", text=f"the {self.p_area_name.text()} is removed.")
         for p in self.areas:
             if p[0] == self.p_area_name.text():
                 self.areas.remove(p)

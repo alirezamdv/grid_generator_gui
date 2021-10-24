@@ -1,4 +1,9 @@
+"""
+a.mahdavi@outlook.com
+"""
+
 import os
+import subprocess
 import sys
 
 from PyQt5.QtWidgets import (
@@ -133,6 +138,9 @@ class MapWindow(QWidget):
         self.save_butt = QPushButton("save")
         self.save_butt.clicked.connect(self.save)
 
+        self.run_butt = QPushButton("run")
+        self.run_butt.clicked.connect(self.run)
+
         self.vbox.addWidget(self.ref_factor_label, 3, 1)
         self.vbox.addWidget(self.ref_factor, 3, 2)
         self.vbox.addWidget(self.steepness_label, 3, 3)
@@ -149,6 +157,7 @@ class MapWindow(QWidget):
         self.vbox.addWidget(self.areas, 5, 3, 3, 3)
 
         self.vbox.addWidget(self.save_butt, 6, 1)
+        self.vbox.addWidget(self.run_butt, 6, 2)
 
         self.checkbox.stateChanged.connect(lambda: self.global_checked(self.checkbox))
         self.poly()
@@ -300,8 +309,17 @@ class MapWindow(QWidget):
     def save(self):
         print(self.areas.areas)
         self.mesh_setup()
+        self.mesh_params()
         self.modify_triangle_c()
         print("saved...")
+
+    def run(self):
+        self.save()
+        print(self.project_path)
+        make_process = subprocess.Popen(["make", "clean", "all"], stderr=subprocess.STDOUT, cwd=self.project_path)
+        if make_process.wait() != 0:
+            print("ooops!")
+
     def save_point(self):
         pass
 
@@ -325,6 +343,27 @@ class MapWindow(QWidget):
         txt += '0'
         with open(self.project_path + f'{self.project_name}.poly', 'w+') as poly:
             poly.write(txt)
+
+    def mesh_params(self):
+        path, file = os.path.split(self.nc.path)
+        txt = "### ProjectName\n"
+        txt += f'{self.project_name}\n'
+        txt = "### ProjectPath\n"
+        txt += f'{self.project_path}\n'
+        txt = "### BathymetryName\n"
+        txt += "Bathymetry_Name\n"
+        txt += "### BathymetryPath\n"
+        txt += f'{path}\n'
+        txt += "### BathymetryDataSet\n"
+        txt += f'{file}\n'
+        txt += "### Refinement Factor c_t [sec] \n"
+        txt += f'{self.ref_factor.text()}\n'
+        txt += "### Steepness refinement ratio [1/sec] (c_grad = ratio * c_t)\n"
+        txt += f'{self.steepness.text()}\n'
+        txt += "### minimal depth dep_min [m] (finest resolution = c_t * sqrt(g * dep_min))\n"
+        txt += f'{self.min_depth.text()}\n'
+        with open(self.project_path + 'mesh_parameters.txt', 'w+') as m:
+            m.write(txt)
 
 
 if __name__ == '__main__':
