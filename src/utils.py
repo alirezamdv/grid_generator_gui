@@ -1,5 +1,5 @@
 import os
-
+import configparser
 import numpy as np
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QMessageBox
@@ -17,6 +17,17 @@ class PathValidator(QtGui.QValidator):
             print(string)
             state = QtGui.QValidator.Invalid
         return state, string, index
+
+
+def get_configs():
+    parser = configparser.ConfigParser()
+    parser.read("src/config.ini")
+    return parser, parser.get("global_configs", "projects").split(",")
+
+
+def write_configs(parser):
+    with open("src/config.ini", "w") as f:
+        parser.write(f)
 
 
 def check_path():
@@ -47,8 +58,6 @@ def gradient(tp, path) -> None:
         f.write(tpxy.tobytes())
         print(f'successfully wrote the grade with {tpxy.shape} shape to grad.bin32. ')
 
-    # return tpxy
-
 
 def get_len_of_variable_from_binary(path) -> int:
     return len(np.fromfile(path))
@@ -59,26 +68,15 @@ def bounding_box(points):
     return [(min(x_coordinates), min(y_coordinates)), (max(x_coordinates), max(y_coordinates))]
 
 
-# def box_overlap(box1, box2):
-#     py1, px1 = box2[0]
-#     py2, px2 = box2[1]
-#     y1, x1 = box1[0]
-#     y2, x2 = box1[1]
-#     # logic1 = (x1 < px1 < x2)
-#     # logic2 = (y1 > py1 > y2)
-#     # logic3 = (x1 < px1 < x2)
-#     # logic4 = (y1 > py1 > y2)
-#     logic1 = (px1 <= x2 or px1 >= x2)
-#
-#     logic2 = (py1 <= y2 or py2 >= y2)
-#
-#
-#     logic3 = (c1 <= zMax2 | | zMax1 >= zMin2)
-#
-#     print('box 1 ', box1, '\n', 'box2    ', box2)
-#     print('logic1:  ', logic1, '\n', 'logic2 ', '\n', logic2, 'logic3  ', logic3, '\n', 'logic4  ', logic4)
-#
-#     return not (logic1 and logic2 and logic3 and logic4)
+def create_project(name):
+    parser, proj = get_configs()
+    os.makedirs("./" + name, exist_ok=True)
+    os.environ['project_path'] = "./" + name +"/"
+    proj.append(name)
+    parser.set("global_configs", "projects", ','.join(proj))
+    write_configs(parser)
+
+
 def is_inside(box1, box2):
     py1, px1 = box2[0]
     py2, px2 = box2[1]

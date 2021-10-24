@@ -9,13 +9,7 @@ from PyQt5.QtWidgets import (
     QLabel, QGroupBox, QComboBox, QPlainTextEdit
 )
 
-from utils import PathValidator
-
-
-def get_configs():
-    parser = configparser.ConfigParser()
-    parser.read("./config.ini")
-    return parser.get("global_configs", "projects").split(",")
+from utils import PathValidator, get_configs
 
 
 class CustomDialog(QDialog):
@@ -26,7 +20,7 @@ class CustomDialog(QDialog):
         self.setWindowTitle("Grid Generator initializer!")
 
         QBtn = QDialogButtonBox.Open | QDialogButtonBox.Cancel
-        self.ITEMS = get_configs()
+        self.ITEMS = get_configs()[1]
         self.buttonBox = QDialogButtonBox(QBtn)
         self.layout = QVBoxLayout()
         self.validation_label = QLabel()
@@ -40,9 +34,9 @@ class CustomDialog(QDialog):
         self.groupbox.setLayout(vbox)
         project_name_label = QLabel("Project Name: ")
         self.cb = QComboBox()
-        c = len([un for un in self.ITEMS if "untitled" in un.split("_")]) + 1
-        self.cb.addItem("untitled" + "_" + str(c))
-        os.environ["project_name"] = "untitled" + "_" + str(c)
+        c = len([un for un in self.ITEMS if "project" in un.split("_")]) + 1
+        self.cb.addItem("project" + "_" + str(c))
+        os.environ["project_name"] = "project" + "_" + str(c)
         self.cb.addItems(self.ITEMS)
         self.cb.setEditable(True)
         self.cb.currentIndexChanged.connect(self.selectionchange)
@@ -135,9 +129,11 @@ class CustomDialog(QDialog):
             self.topography_path.setDisabled(False)
             self.grad_path.setDisabled(False)
 
-    def path_changed(self, x, p):
-        filename = p.text().strip() + '/' if not p.text().endswith('/') else p.text().strip()
-        path_to_file = filename + (x.text().strip())
+    def path_changed(self, x, p=None):
+        path_to_file = x.text().strip()
+        if p:
+            filename = p.text().strip() + '/' if not p.text().endswith('/') else p.text().strip()
+            path_to_file = filename + (x.text().strip())
         if not os.path.isfile(path_to_file):
             x.setStyleSheet("color: rgb(255, 0, 0);")
             self.validation_label.setText(f'please enter valid path for {x.objectName()}!')

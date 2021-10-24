@@ -1,31 +1,27 @@
 import os
 import sys
 
-from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import (
-    QApplication, QVBoxLayout,
-    QWidget, QPushButton,
+    QApplication, QWidget, QPushButton,
     QLabel, QLineEdit,
-    QPlainTextEdit, QGroupBox,
-    QCheckBox, QGridLayout, QMessageBox, QDialog, QComboBox
+    QGroupBox,
+    QCheckBox, QGridLayout, QMessageBox, QComboBox
 )
-from PyQt5 import QtGui, QtCore
 from pyqtlet import L, MapWidget
-import json
 
-from Areas import AreaBox
-from ProjFactory import ProjFactory
+from src.Areas import AreaBox
 from StartDialog import CustomDialog, PolyDialog
 from nc2bin import NetcdfToBin
-from utils import check_path, gradient, bounding_box, is_inside
+from replace_global_constants import replace_global_Constants
+from utils import check_path, is_inside, create_project
 from polygons.polygons import polygons as pols
 
 
-def warning_box(text="warning!"):
+def warning_box(type="Error", text="warning!"):
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Warning)
     msg.setWindowTitle("Warning Message")
-    msg.setText("Error")
+    msg.setText(type)
     msg.setInformativeText(text)
     msg.exec_()
 
@@ -44,15 +40,15 @@ class MapWindow(QWidget):
         dlg = CustomDialog()
         if dlg.exec():
             print("Success!")
-            # t, path = check_path()
+            t, path = check_path()
+            self.project_name = os.getenv("project_name")
             print(os.getenv("topography_path"))
-            path = "/home/amd/work/awi/repo/chile_30sec.nc"
-            t = 'netcdf'
+            # path = "/home/amd/work/awi/repo/chile_30sec.nc"
+            # t = 'netcdf'
             print(path)
             if t == 'netcdf':
-                nc = NetcdfToBin(path)
-                self.data = nc.data
-            # ProjFactory()
+                self.nc = NetcdfToBin(path)
+                self.data = self.nc.data
 
             # gradient(data['topo'], os.path.dirname(data['topo_path']))
             self.bound = {
@@ -61,11 +57,12 @@ class MapWindow(QWidget):
                 'poly': [[self.data['lat_max'], self.data['lon_min']], [self.data['lat_max'], self.data['lon_max']],
                          [self.data['lat_min'], self.data['lon_max']], [self.data['lat_min'], self.data['lon_min']]]
             }
+            create_project(self.project_name)
+            self.project_path = os.getenv("project_path")
         else:
             print("Cancel!")
             self.close()
             exit(1)
-        # TODO get bounds from netCDF
 
         self.map = L.map(self.mapWidget)
         self.map.setView([3.515625, 31.052934], 2)
@@ -95,13 +92,12 @@ class MapWindow(QWidget):
         # START DIALOG
 
         # input box 1
-        self.project_name = os.getenv("project_name")
         self.groupbox = QGroupBox(self.project_name)
         self.groupbox.setCheckable(True)
         self.layout.addWidget(self.groupbox)
         self.vbox = QGridLayout()
         self.groupbox.setLayout(self.vbox)
-        self.checkbox = QCheckBox("Global")
+        self.checkbox = QCheckBox("Use the datasets bounds as Polygon")
         self.checkbox.setChecked(True)
         self.draw_polygon = QPushButton("Draw Polygon")
         self.draw_polygon.clicked.connect(self.start_draw_polygon)
@@ -132,7 +128,7 @@ class MapWindow(QWidget):
         self.coast_res_label = QLabel("Coastal resolution: ")
         self.coast_res = QLineEdit("1000.")
 
-        self.areas = AreaBox(self.start_draw_point)
+        self.areas = AreaBox(self.start_draw_point, warning_box)
 
         self.save_butt = QPushButton("save")
         self.save_butt.clicked.connect(self.save)
@@ -150,34 +146,12 @@ class MapWindow(QWidget):
         self.vbox.addWidget(self.coast_res_label, 4, 5)
         self.vbox.addWidget(self.coast_res, 4, 6)
 
-        self.vbox.addWidget(self.areas, 5, 1)
+        self.vbox.addWidget(self.areas, 5, 3, 3, 3)
 
+        self.vbox.addWidget(self.save_butt, 6, 1)
 
-
-        self.vbox.addWidget(self.save_butt, 7, 1)
-
-        self.input01 = QLineEdit(",".join([str(i) for i in self.bound['bound']]))
-        self.input01.setReadOnly(True)
-        self.vbox.addWidget(self.input01, 2, 3)
-        self.checkbox.stateChanged.connect(lambda: self.global_checked(self.checkbox, self.input01))
-
-        # button
-        # self.button_select_point = QPushButton(self)
-        # font = QtGui.QFont()
-        # font.setFamily("Bauhaus 93")
-        # font.setPointSize(10)
-        # self.button_select_point.setFont(font)
-        # self.button_select_point.setGeometry(QtCore.QRect(100, 20, 200, 50))
-        # self.button_select_point.setText("Select one point")
-        # self.button_select_point.clicked.connect(self.addMarker)
-        # self.label = QLabel()
-        # self.layout.addWidget(self.button_select_point)
-        # self.layout.addWidget(self.label)
-        # Create textbox
-        # self.poly = PolyBox()
+        self.checkbox.stateChanged.connect(lambda: self.global_checked(self.checkbox))
         self.poly()
-        # self.layout.addWidget(self.poly)
-
         self.show()
 
     def popup(self, x):
@@ -189,9 +163,6 @@ class MapWindow(QWidget):
     # def draw_point(self, point):
     #     point = L.marker(point)
     #     self.drawControl.featureGroup.addLayer(point)
-
-
-
 
     def poly_text_edit(self):
         with open(f'{self.project_name}.poly', 'r+') as poly:
@@ -238,7 +209,7 @@ class MapWindow(QWidget):
                 self.polygon = [[_nodes[str(p)]['lat'], _nodes[str(p)]['lng']] for p in _nodes.keys()]
                 self.poly()
             else:
-                warning_box("the bounding box of the polygon is overlapping the data bounds")
+                warning_box(text="the bounding box of the polygon is overlapping the data bounds")
                 # self.remove_shape(n=1)
                 # self.remove_shape('Rectangle', 1)
 
@@ -248,8 +219,10 @@ class MapWindow(QWidget):
         if e['layerType'] == 'marker':
             point = e['layer']['_latlng']
             print(e)
-            self.draw_circle(point, radius=0.6 * 100, alpha=0.5)
-            self.draw_circle(point, radius=0.5 * 100, color='white')
+            self.areas.lat.setText(str(point['lat']))
+            self.areas.long.setText(str(point['lng']))
+            self.draw_circle(point, radius=float(self.areas.p_area_inner.text()) * 100, alpha=0.4)
+            self.draw_circle(point, radius=float(self.areas.p_area_outer.text()) * 100, color='white')
 
     def get_layer(self, e):
         if len(e['features']) > 0:
@@ -282,17 +255,13 @@ class MapWindow(QWidget):
         })
         self.map.addLayer(circle)
 
-    def global_checked(self, box, input):
-        print(box.isChecked())
+    def global_checked(self, box):
         if box.isChecked():
-            input.setReadOnly(True)
-            input.setText(str(self.bound))
             self.draw_polygon.setEnabled(False)
             self.polygon = self.bound['poly']
             self.poly()
         else:
             self.draw_polygon.setEnabled(True)
-            input.setReadOnly(False)
 
     def project_name_changed(self):
         self.groupbox.setTitle(self.project_name_input.text())
@@ -303,9 +272,36 @@ class MapWindow(QWidget):
         if len(_shapes) > 0:
             [self.drawControl.featureGroup.removeLayer(p) for p in _shapes[:n]]
 
-    def save(self):
-        print(help(self.drawControl.featureGroup.layers[0]))
+    def mesh_setup(self):
+        n_p_areas = len(self.areas.areas)
+        txt = ""
+        txt += f'{self.c_res.text()}\n'
+        txt += f'{self.f_res.text()}\n'
+        txt += f'{self.coast_res.text()}\n'
+        txt += f'0\n'
+        txt += f'{n_p_areas}\n'
+        for i in range(n_p_areas):
+            txt += f'{" ".join(self.areas.areas[i])}\n'
 
+        with open(self.project_path + "mesh_setup.txt", 'w+') as f:
+            f.write(txt)
+
+    def modify_triangle_c(self):
+        self.nc.get_data(write=True)
+        p = self.nc.out_path
+        lon = p + "/lon.bin32"
+        lat = p + "/lat.bin32"
+        topo = p + "/topo.bin32"
+        grad = p + "/grad.bin32"
+        lenLon = self.data['lon_len']
+        lenLat = self.data['lat_len']
+        replace_global_Constants(self.project_name, self.project_path, lenLat, lenLon, lon, lat, topo, grad)
+
+    def save(self):
+        print(self.areas.areas)
+        self.mesh_setup()
+        self.modify_triangle_c()
+        print("saved...")
     def save_point(self):
         pass
 
@@ -327,7 +323,7 @@ class MapWindow(QWidget):
             else:
                 txt += f'{i} {i} {i + 1} {n_boundary_markers}\n'
         txt += '0'
-        with open(f'{self.project_name}.poly', 'w+') as poly:
+        with open(self.project_path + f'{self.project_name}.poly', 'w+') as poly:
             poly.write(txt)
 
 

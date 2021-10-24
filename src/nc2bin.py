@@ -19,7 +19,7 @@ class NetcdfToBin:
             exit(1)
         self.path = path_to_nc
         self.name = Path(path_to_nc).stem
-        self.dir_path = os.path.dirname(os.path.realpath(__file__))
+        self.dir_path = "."
         self.ds = self.read_()
         self.mk_dir()
         self.data = {}
