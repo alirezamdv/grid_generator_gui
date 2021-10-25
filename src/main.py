@@ -1,4 +1,5 @@
 """
+alireza.mahdavi@awi.de
 a.mahdavi@outlook.com
 """
 
@@ -15,11 +16,11 @@ from PyQt5.QtWidgets import (
 from pyqtlet import L, MapWidget
 
 from src.Areas import AreaBox
-from StartDialog import CustomDialog, PolyDialog
-from nc2bin import NetcdfToBin
-from replace_global_constants import replace_global_Constants
-from utils import check_path, is_inside, create_project
-from polygons.polygons import polygons as pols
+from src.StartDialog import CustomDialog, PolyDialog
+from src.nc2bin import NetcdfToBin
+from src.replace_global_constants import replace_global_Constants
+from src.utils import check_path, is_inside, create_project
+from src.polygons.polygons import polygons as pols
 
 
 def warning_box(type="Error", text="warning!"):
@@ -174,7 +175,7 @@ class MapWindow(QWidget):
     #     self.drawControl.featureGroup.addLayer(point)
 
     def poly_text_edit(self):
-        with open(f'{self.project_name}.poly', 'r+') as poly:
+        with open(f'{self.project_path}{self.project_name}.poly', 'r+') as poly:
             content = poly.read()
             dlg = PolyDialog(content)
             if dlg.exec():
@@ -366,7 +367,7 @@ class MapWindow(QWidget):
             m.write(txt)
 
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    widget = MapWindow()
-    sys.exit(app.exec_())
+# if __name__ == '__main__':
+#     app = QApplication(sys.argv)
+#     widget = MapWindow()
+#     sys.exit(app.exec_())

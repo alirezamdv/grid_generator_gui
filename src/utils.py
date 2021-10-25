@@ -25,12 +25,12 @@ class PathValidator(QtGui.QValidator):
 
 def get_configs():
     parser = configparser.ConfigParser()
-    parser.read("src/config.ini")
+    parser.read("config.ini")
     return parser, parser.get("global_configs", "projects").split(",")
 
 
 def write_configs(parser):
-    with open("src/config.ini", "w") as f:
+    with open("config.ini", "w") as f:
         parser.write(f)
 
 

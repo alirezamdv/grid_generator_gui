@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (
     QLabel, QGroupBox, QComboBox, QPlainTextEdit
 )
 
-from utils import PathValidator, get_configs
+from src.utils import PathValidator, get_configs
 
 
 class CustomDialog(QDialog):
