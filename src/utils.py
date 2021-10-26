@@ -8,7 +8,7 @@ import numpy as np
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QMessageBox
 
-
+p = os.path.dirname(os.path.abspath(__file__))
 class PathValidator(QtGui.QValidator):
     def __init__(self, parent=None):
         super(PathValidator, self).__init__(parent)
@@ -25,12 +25,12 @@ class PathValidator(QtGui.QValidator):
 
 def get_configs():
     parser = configparser.ConfigParser()
-    parser.read("config.ini")
+    parser.read(p+"/config.ini")
     return parser, parser.get("global_configs", "projects").split(",")
 
 
 def write_configs(parser):
-    with open("config.ini", "w") as f:
+    with open(p+"/config.ini", "w") as f:
         parser.write(f)
 
 
