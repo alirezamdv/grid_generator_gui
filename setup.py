@@ -13,6 +13,7 @@ setup(
         'Jinja2==3.0.1',
         'netCDF4==1.5.7',
         'numpy==1.21.2',
+        'pyside2==5.14.2.2',
         'PyQt5==5.15.5',
         'pyqtlet==0.3.3',
         'PyQtWebEngine==5.15.5'
