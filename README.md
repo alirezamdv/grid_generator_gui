@@ -1,4 +1,5 @@
 ## Grid Generator GUI
+
 This is a graphical user interface for triangle software.
 Triangle generates exact Delaunay triangulations, constrained Delaunay triangulations, conforming Delaunay triangulations, Voronoi diagrams,
 and high-quality triangular meshes. [More](https://www.cs.cmu.edu/~quake/triangle.html)
